@@ -1,0 +1,25 @@
+server:
+  port: 8008
+spring:
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    url: jdbc:mysql://127.0.0.1:3306/reggie?serviceTimezone=GMT+8&useSSL=false&characterEncoding=UTF-8
+    username: root
+    password: 123abc
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  redis:
+    #host: localhost
+    host: 192.168.205.129
+    password: 123abc
+  # 格式化时间
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+    locale: zh_CN
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    map-underscore-to-camel-case: true
+  global-config:
+    db-config:
+      id-type: assign_id # 使用 UUID 加密的 id
