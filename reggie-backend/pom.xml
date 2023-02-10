@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.sakura</groupId>
         <artifactId>reggie</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
+        <version>1.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -16,7 +16,7 @@
 
     <artifactId>reggie-backend</artifactId>
 
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.0-SNAPSHOT</version>
 
     <name>瑞吉外卖后台管理端</name>
     <description>reggie-backend</description>
@@ -29,7 +29,8 @@
         <dependency>
             <groupId>com.sakura</groupId>
             <artifactId>reggie-common</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>1.0-SNAPSHOT</version>
+            <scope>compile</scope>
         </dependency>
 
         <dependency>

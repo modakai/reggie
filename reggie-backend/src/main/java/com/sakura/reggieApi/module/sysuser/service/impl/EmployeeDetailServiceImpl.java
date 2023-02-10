@@ -5,7 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.sakura.reggieApi.common.pojo.Role;
 import com.sakura.reggieApi.module.sysuser.mapper.EmployeeMapper;
 import com.sakura.reggieApi.common.mapper.RoleMapper;
-import com.sakura.reggieApi.module.sysuser.pojo.Employee;
+import com.sakura.reggieApi.common.pojo.Employee;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsPasswordService;
 import org.springframework.security.core.userdetails.UserDetailsService;

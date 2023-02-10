@@ -1,11 +1,8 @@
 package com.sakura.reggieApi;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sakura.reggieApi.common.pojo.Role;
 import com.sakura.reggieApi.common.utils.RedisUtils;
 
-import com.sakura.reggieApi.module.sysuser.pojo.Employee;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;

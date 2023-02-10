@@ -10,7 +10,7 @@ import com.sakura.reggieApi.common.utils.RedisUtils;
 import com.sakura.reggieApi.common.utils.TokenUtils;
 import com.sakura.reggieApi.exception.*;
 import com.sakura.reggieApi.module.sysuser.mapper.EmployeeMapper;
-import com.sakura.reggieApi.module.sysuser.pojo.Employee;
+import com.sakura.reggieApi.common.pojo.Employee;
 import com.sakura.reggieApi.module.sysuser.service.EmployeeService;
 
 import com.sakura.reggieApi.module.sysuser.vo.EmployeeVo;

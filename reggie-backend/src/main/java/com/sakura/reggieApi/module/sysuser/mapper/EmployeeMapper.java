@@ -2,7 +2,7 @@ package com.sakura.reggieApi.module.sysuser.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.sakura.reggieApi.common.pojo.Role;
-import com.sakura.reggieApi.module.sysuser.pojo.Employee;
+import com.sakura.reggieApi.common.pojo.Employee;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;

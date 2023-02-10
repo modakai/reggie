@@ -1,4 +1,4 @@
-package com.sakura.reggieApi.module.sysuser.pojo;
+package com.sakura.reggieApi.common.pojo;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;

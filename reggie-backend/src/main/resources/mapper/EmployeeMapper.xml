@@ -5,7 +5,7 @@
 
 <mapper namespace="com.sakura.reggieApi.module.sysuser.mapper.EmployeeMapper">
 
-    <resultMap id="linkRoleIdQuery" type="com.sakura.reggieApi.module.sysuser.pojo.Employee">
+    <resultMap id="linkRoleIdQuery" type="com.sakura.reggieApi.common.pojo.Employee">
         <id property="id" column="id" jdbcType="INTEGER"/>
         <result property="username" column="username" jdbcType="VARCHAR"/>
         <result property="password" column="password" jdbcType="VARCHAR"/>

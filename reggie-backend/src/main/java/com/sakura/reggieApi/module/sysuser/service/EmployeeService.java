@@ -1,7 +1,7 @@
 package com.sakura.reggieApi.module.sysuser.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.sakura.reggieApi.module.sysuser.pojo.Employee;
+import com.sakura.reggieApi.common.pojo.Employee;
 import com.sakura.reggieApi.module.sysuser.vo.EmployeeVo;
 
 

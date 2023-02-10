@@ -5,7 +5,6 @@ import com.sakura.reggieApi.common.mapper.LogMapper;
 import com.sakura.reggieApi.common.pojo.Log;
 import com.sakura.reggieApi.common.utils.JsonResponseResult;
 import com.sakura.reggieApi.common.utils.TokenUtils;
-import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -31,7 +30,6 @@ import java.util.Date;
  */
 @Component
 @Aspect
-@Slf4j
 public class LogAspect {
 
 
@@ -62,7 +60,6 @@ public class LogAspect {
         // 获取方法的名字
         MethodSignature methodSignature = (MethodSignature) joinPoint.getSignature();
         String methodName = methodSignature.toString();
-        log.info("正在执行方法: " + methodName.substring(0, methodName.indexOf("(")));
         logMsg.setMethod(methodName);
 
         Method method = methodSignature.getMethod();

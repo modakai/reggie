@@ -1,13 +1,10 @@
 package com.sakura.reggieApi.module.sysuser.controller;
 
 import com.sakura.reggieApi.common.anno.LogAnnotation;
-import com.sakura.reggieApi.module.sysuser.pojo.Employee;
+import com.sakura.reggieApi.common.pojo.Employee;
 import com.sakura.reggieApi.module.sysuser.service.EmployeeService;
 import com.sakura.reggieApi.module.sysuser.vo.EmployeeVo;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.crypto.password.DelegatingPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
