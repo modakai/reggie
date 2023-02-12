@@ -1,6 +1,7 @@
 package com.sakura.reggieApi.common.config;
 
 import com.sakura.reggieApi.common.filter.JsonAuthenticationFilter;
+import com.sakura.reggieApi.common.utils.JsonResponseResult;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -47,6 +48,13 @@ public class SecurityConfig {
                 .authorizeRequests((requests) -> requests
                         .mvcMatchers("/backend/user/login", "/backend/user/logout").permitAll()
                         .anyRequest().authenticated()
+                )
+                .exceptionHandling((ex) -> ex
+                        .accessDeniedHandler((request, response, accessDeniedException) -> {
+                            response.setContentType("application/json;charset=UTF-8");
+
+                            response.getWriter().println(JsonResponseResult.error("用户权限不足"));
+                        })
                 )
                 .csrf().disable();
 

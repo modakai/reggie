@@ -2,6 +2,7 @@ package com.sakura.reggieApi.module.sysuser.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -14,6 +15,7 @@ import com.sakura.reggieApi.common.pojo.Employee;
 import com.sakura.reggieApi.module.sysuser.service.EmployeeService;
 
 import com.sakura.reggieApi.module.sysuser.vo.EmployeeVo;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -38,6 +40,10 @@ public class EmployeeServiceImpl extends ServiceImpl<EmployeeMapper, Employee>
 
     private static final BCryptPasswordEncoder PASSWORD_ENCODE = new BCryptPasswordEncoder();
     private static final String PASSWORD_COMPOSE = "{bcrypt}";
+
+    @Value("${page.pageSize}")
+    private Integer pageSize;
+
 
     @Resource
     AuthenticationManager authenticationManager;
@@ -140,15 +146,16 @@ public class EmployeeServiceImpl extends ServiceImpl<EmployeeMapper, Employee>
         // 2.1.3 比较
         if (!PASSWORD_ENCODE.matches(oldPassword, password))
             throw new UpdatePasswordException("旧密码输入错误!");
-        // 2.1.4 删除redis 中的数据 并将 当前的 token 提交进 redis 的黑名单中
-        redisUtils.delete("login:" + employee.getId());
-        redisUtils.sAdd("token:black", token);
 
         // 3, 校验 输入的两次密码是否正确
         String newPassword = employeeVo.getNewPassword();
         String repeatPassword = employeeVo.getRepeatPassword();
         if (!newPassword.matches(repeatPassword))
             throw new UpdatePasswordException("两次密码输入不一致");
+
+        // 2.1.4 删除redis 中的数据 并将 当前的 token 提交进 redis 的黑名单中
+        redisUtils.delete("login:" + employee.getId());
+        redisUtils.sAdd("token:black", token);
 
         // 4, 正确则 修改用户的 密码
         // 4.1 加密 密码 (拼写前缀)
@@ -207,11 +214,107 @@ public class EmployeeServiceImpl extends ServiceImpl<EmployeeMapper, Employee>
 
         // 3.2 添加用户
         int insert = employeeMapper.insert(employee);
-        if (insert <= 0)
+        // 3.3 添加用户与 角色表的关系数据 自行实现
+        insert += employeeMapper.insertByIdRoleUser(employee.getId());
+
+        if (insert <= 1)
             throw new RuntimeException("服务器异常");
 
-
         return JsonResponseResult.defaultSuccess("添加成功");
+    }
+
+    /**
+     * 系统用户的分页查询
+     * @param token 令牌
+     * @param curPage 当前页面
+     * @param empName 用户名
+     */
+    @Override
+    public String listPage(String token, Integer curPage, String empName) {
+        // 1, 校验token
+        tokenUtils.checkToken(token);
+        // 2, 查询 empName 是否为 default
+        Page<Employee> employeePage = new Page<>(curPage, pageSize);
+        QueryWrapper<Employee> queryWrapper = new QueryWrapper<>();
+        if (!"default".equals(empName)) {
+            queryWrapper.like("name", empName);
+        }
+
+        // 2.1 不为 default 则是 非用户名的分页查询
+        Page<Employee> page = employeeMapper.selectPage(employeePage, queryWrapper);
+
+        // 3, 返回数据
+        return JsonResponseResult.success(page);
+    }
+
+
+    /**
+     * 更新用户的 状态
+     * @param token 令牌
+     * @param username 用户账号
+     * @param status 状态 0 为 false   1 为 true
+     */
+    @Override
+    public String updateStatus(String token, String username, Boolean status) {
+        // 1, 校验token
+        tokenUtils.checkToken(token);
+
+        // 2, 编写条件
+        Long eid = Long.valueOf(tokenUtils.getMemberIdByJwtToken(token));
+        UpdateWrapper<Employee> updateWrapper = new UpdateWrapper<Employee>()
+                .eq("username", username)
+                .set("status", status)
+                .set("update_time", new Date())
+                .set("update_user", eid);
+
+        int update = employeeMapper.update(null, updateWrapper);
+        if (update <= 0) {
+            throw new EmployeeServiceException("服务异常");
+        }
+
+        return JsonResponseResult.defaultSuccess("修改成功");
+    }
+
+    /**
+     * 根据 username 查询单个用户
+     * @param token 令牌
+     * @param username 要查询的用户
+     */
+    @Override
+    public String selectOneEmp(String token, String username) {
+        // 1, 校验token
+        tokenUtils.checkToken(token);
+
+        QueryWrapper<Employee> queryWrapper = new QueryWrapper<Employee>()
+                .eq("username", username);
+
+        Employee employee = employeeMapper.selectOne(queryWrapper);
+        if (employee == null)
+            throw new NotSysUserException("对不起, 未查询到相应的用户信息");
+
+        return JsonResponseResult.success(employee);
+    }
+
+    /**
+     * 修改用户信息
+     * @param token 令牌
+     * @param reqEmployee 要修改的用户信息
+     */
+    @Override
+    public String updateEmployee(String token, Employee reqEmployee) {
+        // 1, 校验token
+        tokenUtils.checkToken(token);
+        // 2, 取出 token 里面的 用户id
+        Long eid = Long.valueOf(tokenUtils.getMemberIdByJwtToken(token));
+
+        reqEmployee.setUpdateTime(new Date());
+        reqEmployee.setUpdateUser(eid);
+
+        int i = employeeMapper.updateById(reqEmployee);
+        if (i <= 0)
+            throw new EmployeeServiceException("服务异常");
+
+        return JsonResponseResult.defaultSuccess("编辑成功");
     }
 
 

@@ -16,4 +16,11 @@ import java.util.List;
 public interface EmployeeMapper extends BaseMapper<Employee> {
 
     List<Role> selectByIdRoles(Integer uid);
+
+    /**
+     * 向关系表中插入数据
+     * @param eid
+     * @return
+     */
+    Integer insertByIdRoleUser(Long eid);
 }

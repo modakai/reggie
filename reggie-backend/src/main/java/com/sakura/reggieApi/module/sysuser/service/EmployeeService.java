@@ -20,4 +20,12 @@ public interface EmployeeService extends IService<Employee> {
     String updatePassword(String token, EmployeeVo employeeVo);
 
     String addEmployee(String token, Employee employee);
+
+    String listPage(String token, Integer curPage, String empName);
+
+    String updateStatus(String token, String username, Boolean status);
+
+    String selectOneEmp(String token, String username);
+
+    String updateEmployee(String token, Employee reqEmployee);
 }

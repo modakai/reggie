@@ -16,6 +16,8 @@ import java.util.Date;
  */
 public class TokenUtils {
 
+    public static final String REQUEST_HEADER_TOKEN_KEY = "token";
+
     /**
      * 两个常量： 过期时间；秘钥
      */

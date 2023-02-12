@@ -23,3 +23,5 @@ mybatis-plus:
   global-config:
     db-config:
       id-type: assign_id # 使用 UUID 加密的 id
+page:
+  pageSize: 10

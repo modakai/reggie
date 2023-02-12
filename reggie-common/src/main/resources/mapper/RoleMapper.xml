@@ -11,13 +11,13 @@
         <result property="nameDetail" column="name_detail" jdbcType="VARCHAR"/>
     </resultMap>
 
-    <select id="selectByeIdRoles" resultMap="linkEmpUserQuery">
+    <select id="selectByeIdRoles" resultType="com.sakura.reggieApi.common.pojo.Role">
         select
             id, name, name_detail
         from
             role
         where
-            id = (select rid from role_user where eid = #{eid})
+            id in (select rid from role_user where eid = #{eid})
     </select>
 
 </mapper>

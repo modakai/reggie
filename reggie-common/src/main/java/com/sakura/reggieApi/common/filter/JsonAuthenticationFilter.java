@@ -43,7 +43,12 @@ public class JsonAuthenticationFilter extends OncePerRequestFilter {
         }
 
         // 2, 校验 token
-        tokenUtils.checkToken(token);
+        try {
+            tokenUtils.checkToken(token);
+        } catch (Exception e) {
+            returnResponse(response, e.getMessage());
+            return;
+        }
 
         // 3, 解析token
         String userId = tokenUtils.getMemberIdByJwtToken(token);

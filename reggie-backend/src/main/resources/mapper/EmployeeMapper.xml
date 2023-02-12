@@ -27,6 +27,9 @@
     <sql id="base">
         id, username, `password`, phone, sex, id_number, `status`, create_time, update_time, create_uer, update_user
     </sql>
+    <insert id="insertByIdRoleUser">
+        insert into role_user(rid, eid) values (1, #{eid})
+    </insert>
 
     <select id="selectByIdRoles" resultMap="linkRoleIdQuery">
         select

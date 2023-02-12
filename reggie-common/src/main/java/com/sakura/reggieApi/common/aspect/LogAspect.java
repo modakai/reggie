@@ -6,6 +6,7 @@ import com.sakura.reggieApi.common.pojo.Log;
 import com.sakura.reggieApi.common.utils.JsonResponseResult;
 import com.sakura.reggieApi.common.utils.TokenUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.annotation.AfterThrowing;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
@@ -17,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.Method;
@@ -54,7 +56,7 @@ public class LogAspect {
 
     @Around("pointcutAll()")
     @Transactional
-    public Object controllerAround(ProceedingJoinPoint joinPoint) {
+    public Object controllerAround(ProceedingJoinPoint joinPoint) throws IOException {
         Log logMsg = new Log();
 
         // 获取方法的名字
@@ -94,8 +96,6 @@ public class LogAspect {
             PrintWriter pw = new PrintWriter(sw);
             e.printStackTrace(pw);
             logMsg.setExceptionDetail(sw.toString());
-
-            methodValue = JsonResponseResult.error(e.getMessage());
         } finally {
             logMsg.setCreateTime(new Date());
             logMapper.insert(logMsg);
@@ -104,6 +104,19 @@ public class LogAspect {
         return methodValue;
     }
 
+
+    @AfterThrowing(throwing = "e", pointcut = "pointcutAll()")
+    public void afterThrowing(Exception e) {
+        try {
+            response.setContentType("application/json;charset=UTF-8");
+            String message = e.getMessage();
+
+            response.getWriter().println(JsonResponseResult.error(message.substring(message.indexOf(":") + 1)));
+
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
 
 
     /**
