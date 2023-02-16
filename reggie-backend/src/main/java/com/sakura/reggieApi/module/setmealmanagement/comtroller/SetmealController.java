@@ -4,6 +4,8 @@ import com.sakura.reggieApi.common.anno.LogAnnotation;
 import com.sakura.reggieApi.common.utils.TokenUtils;
 import com.sakura.reggieApi.module.setmealmanagement.pojo.Setmeal;
 import com.sakura.reggieApi.module.setmealmanagement.service.SetmealService;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,7 +26,17 @@ public class SetmealController {
     @Resource
     SetmealService setmealService;
 
+    @LogAnnotation("根据分类id 查询 套餐列表")
+    @Cacheable(value = "setmealCache", key = "'setmeal' + '_' + #categoryId", unless = "#result == null")
+    @GetMapping("/listByCategoryId/{categoryId}")
+    public String doListDishByCategoryId(@RequestHeader(HERDER_TOKEN_KEY) String token,
+                                         @PathVariable("categoryId") Long categoryId) {
+        return setmealService.listDishByCId(token, categoryId);
+    }
+
     @LogAnnotation("更新套餐详情信息")
+    // 清除所有的缓存
+    @CacheEvict(value = "setmealCache", allEntries = true)
     @PreAuthorize("hasAnyRole('ADMIN','SUPADMIN')")
     @PutMapping("/update")
     public String doUpdateSetmeal(@RequestHeader(HERDER_TOKEN_KEY) String token,
@@ -41,6 +53,8 @@ public class SetmealController {
     }
 
     @LogAnnotation("添加套餐")
+    // 清除对应 id 的数据
+    @CacheEvict(value = "setmealCache", key = "#setmealReq.categoryId")
     @PreAuthorize("hasAnyRole('ADMIN','SUPADMIN')")
     @PostMapping("/add")
     public String doAddSetmeal(@RequestHeader(HERDER_TOKEN_KEY) String token,
@@ -50,6 +64,8 @@ public class SetmealController {
 
 
     @LogAnnotation("批量 更新套餐的售卖状态以及删除套餐")
+    // 清除对应 id 的数据
+    @CacheEvict(value = "setmealCache", allEntries = true)
     @PreAuthorize("hasAnyRole('ADMIN','SUPADMIN')")
     @PutMapping("/batchUpdate")
     public String doBatchSimpleUpdate(@RequestHeader(HERDER_TOKEN_KEY) String token,
@@ -58,6 +74,8 @@ public class SetmealController {
     }
 
     @LogAnnotation("更新套餐的售卖状态以及删除套餐")
+    // 清除对应 id 的数据
+    @CacheEvict(value = "setmealCache", allEntries = true)
     @PreAuthorize("hasAnyRole('ADMIN','SUPADMIN')")
     @PutMapping("/simpleUpdate")
     public String doSimpleUpdate(@RequestHeader(HERDER_TOKEN_KEY) String token,

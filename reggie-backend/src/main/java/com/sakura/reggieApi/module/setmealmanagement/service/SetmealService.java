@@ -22,4 +22,6 @@ public interface SetmealService extends IService<Setmeal> {
     String queryDetail(String token, String name);
 
     String updateSermealDetail(String token, Setmeal setmealReq);
+
+    String listDishByCId(String token, Long categoryId);
 }

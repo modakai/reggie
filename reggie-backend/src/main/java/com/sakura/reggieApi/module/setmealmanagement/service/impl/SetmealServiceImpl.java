@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.sakura.reggieApi.common.utils.JsonResponseResult;
 import com.sakura.reggieApi.common.utils.TokenUtils;
 import com.sakura.reggieApi.exception.SetmealServiceException;
+import com.sakura.reggieApi.module.dishmanagement.pojo.Dish;
 import com.sakura.reggieApi.module.setmealmanagement.mapper.SetmealDishMapper;
 import com.sakura.reggieApi.module.setmealmanagement.mapper.SetmealMapper;
 import com.sakura.reggieApi.module.setmealmanagement.pojo.Setmeal;
@@ -222,6 +223,27 @@ public class SetmealServiceImpl extends ServiceImpl<SetmealMapper, Setmeal>
         }
 
         return JsonResponseResult.defaultSuccess("修改成功");
+    }
+
+    /**
+     * 根据 套餐的分类id 查询对应套餐列表
+     * @param token 令牌
+     * @param categoryId 分类id
+     */
+    @Override
+    public String listDishByCId(String token, Long categoryId) {
+        QueryWrapper<Setmeal> setmealQueryWrapper = new QueryWrapper<Setmeal>()
+                .eq("category_id", categoryId)
+                .eq("status", 1)
+                .eq("is_deleted", 0);
+
+
+        List<Setmeal> setmealList = setmealMapper.selectList(setmealQueryWrapper);
+
+        if (setmealList.size() <= 0)
+            throw new SetmealServiceException("未搜索到对应套餐");
+
+        return JsonResponseResult.success(setmealList);
     }
 
 
