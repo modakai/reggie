@@ -4,6 +4,8 @@ import com.sakura.reggieApi.common.filter.JsonAuthenticationFilter;
 import com.sakura.reggieApi.common.utils.JsonResponseResult;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
@@ -33,38 +35,9 @@ public class SecurityConfig {
     @Resource
     JsonAuthenticationFilter jsonAuthenticationFilter;
 
-    @Bean
-    AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
-        return configuration.getAuthenticationManager();
-    }
-
-    /*
-        控制 管理端安全的 securityFilterChain
-     */
-    @Bean
-    SecurityFilterChain backendSecurityFilterChain(HttpSecurity http) throws Exception {
-        http
-                .antMatcher("/backend/**")
-                .authorizeRequests((requests) -> requests
-                        .mvcMatchers("/backend/user/login", "/backend/user/logout").permitAll()
-                        .anyRequest().authenticated()
-                )
-                .exceptionHandling((ex) -> ex
-                        .accessDeniedHandler((request, response, accessDeniedException) -> {
-                            response.setContentType("application/json;charset=UTF-8");
-
-                            response.getWriter().println(JsonResponseResult.error("用户权限不足"));
-                        })
-                )
-                .csrf().disable();
-
-        // 解决跨域
-        http.cors().configurationSource(configurationSource());
-
-        // 设置 过滤器在 username 过滤器之前
-        http.addFilterBefore(jsonAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
-        return http.build();
-    }
+    @Resource
+    @Lazy
+    AuthenticationManager authenticationManager;
 
     /**
      * 静态资源放行
@@ -91,4 +64,63 @@ public class SecurityConfig {
         url.registerCorsConfiguration("/**", configuration);
         return url;
     }
+
+
+    @Bean
+    AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
+        return configuration.getAuthenticationManager();
+    }
+
+    /*
+        控制 管理端安全的 securityFilterChain
+     */
+    @Bean
+    SecurityFilterChain backendSecurityFilterChain(HttpSecurity http) throws Exception {
+        http
+                .authorizeRequests((requests) -> requests
+                        .mvcMatchers("/backend/user/login", "/backend/user/logout").permitAll()
+                        .antMatchers("/backend/**").authenticated()
+                )
+                .exceptionHandling((ex) -> ex
+                        .accessDeniedHandler((request, response, accessDeniedException) -> {
+                            response.setContentType("application/json;charset=UTF-8");
+
+                            response.getWriter().println(JsonResponseResult.error("用户权限不足"));
+                        })
+                )
+                .csrf().disable();
+
+        // 解决跨域
+        http.cors().configurationSource(configurationSource());
+
+        // 设置 过滤器在 username 过滤器之前
+        http.addFilterAt(jsonAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+        return http.build();
+    }
+
+//    @Bean
+//    @Order(0)
+//    SecurityFilterChain appSecurityFilterChain(HttpSecurity http) throws Exception {
+//        http
+//                .antMatcher("/app/**")
+//                .authorizeRequests((reqs) -> reqs
+//                        .mvcMatchers("/app/user/login/**", "/app/user/logout", "/app/user/vc.jpg").permitAll()
+//                        .anyRequest().authenticated()
+//                )
+//                .exceptionHandling((ex) -> ex
+//                        .accessDeniedHandler((request, response, accessDeniedException) -> {
+//                            response.setContentType("application/json;charset=UTF-8");
+//
+//                            response.getWriter().println(JsonResponseResult.error("用户权限不足"));
+//                        })
+//                )
+//                .csrf().disable();
+//
+//        http.cors().configurationSource(configurationSource());
+//        http.addFilterBefore(jsonAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+//
+//        return http.build();
+//    }
+
+
 }

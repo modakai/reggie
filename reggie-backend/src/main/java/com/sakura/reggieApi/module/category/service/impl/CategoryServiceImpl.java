@@ -10,6 +10,7 @@ import com.sakura.reggieApi.exception.CategoryException;
 import com.sakura.reggieApi.module.category.mapper.CategoryMapper;
 import com.sakura.reggieApi.module.category.pojo.Category;
 import com.sakura.reggieApi.module.category.service.CategoryService;
+import com.sakura.reggieApi.module.dishmanagement.pojo.Dish;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -17,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.Date;
+import java.util.List;
 
 /**
  * @author sakura
@@ -56,7 +58,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category>
             throw new CategoryException("无法添加重复的商品");
 
         // 3, 校验 type 是否 等于 1 | 2 其中一个
-        if (type != 1L || type != 2L)
+        if (type != 1L && type != 2L)
             throw new CategoryException("添加的菜品类型错误");
 
         Long id = Long.valueOf(tokenUtils.getMemberIdByJwtToken(token));
@@ -87,7 +89,11 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category>
 
         QueryWrapper<Category> queryWrapper = new QueryWrapper<Category>()
                 .orderByAsc("sort");
+
         Page<Category> page = categoryMapper.selectPage(categoryPage, queryWrapper);
+
+        if (page.getTotal() <= 0)
+            throw new CategoryException("未搜索到任何商品");
 
         return JsonResponseResult.success(page);
     }
@@ -169,4 +175,77 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category>
 
         return JsonResponseResult.defaultSuccess("修改成功");
     }
+
+    /**
+     * 根据类型 来查询分类的 列表
+     * @param token 令牌
+     * @param type 类型
+     */
+    @Override
+    public String listByType(String token, Integer type) {
+        tokenUtils.checkToken(token);
+
+        if (type != 1 && type != 2)
+            throw new CategoryException("类型传输错误");
+
+        String typeName;
+        if (type == 1) {
+           typeName = "菜品分类";
+        } else  {
+            typeName = "套餐分类";
+        }
+
+        QueryWrapper<Category> queryWrapper = new QueryWrapper<Category>()
+                .eq("type", type);
+
+        List<Category> list = categoryMapper.selectList(queryWrapper);
+
+        if (list.size() <= 0)
+            throw new CategoryException("系统中没有" + typeName + "数据, 请先进行添加!");
+
+        return JsonResponseResult.success(list);
+    }
+
+    /**
+     * 根据 id 获取分类的名称
+     * @param token 令牌
+     * @param id 分类id
+     */
+    @Override
+    public String queryName(String token, Long id) {
+        tokenUtils.checkToken(token);
+
+        QueryWrapper<Category> queryWrapper = new QueryWrapper<Category>()
+                .eq("id", id);
+
+        Category category = categoryMapper.selectOne(queryWrapper);
+        if (category == null)
+            throw new CategoryException("没有该类型分类");
+
+        return JsonResponseResult.success(category.getName());
+    }
+
+    /**
+     * 查询 分类 以及分类相关菜品
+     * @return
+     */
+    @Override
+    public String listCategoryAndDish(String token) {
+        tokenUtils.checkToken(token);
+
+        QueryWrapper<Category> queryWrapper = new QueryWrapper<Category>()
+                .orderByAsc("sort");
+
+        List<Category> categoryList = categoryMapper.selectList(queryWrapper);
+
+        for (Category category : categoryList) {
+            List<Dish> dishes = categoryMapper.selectCorrelationDish(category.getId());
+
+            category.setDishList(dishes);
+        }
+
+        return JsonResponseResult.success(categoryList);
+    }
+
+
 }

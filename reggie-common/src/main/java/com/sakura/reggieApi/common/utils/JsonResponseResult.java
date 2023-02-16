@@ -74,7 +74,6 @@ public class JsonResponseResult<T> implements Serializable {
     }
 
     /**
-     *
      * @param data 数据
      * @return 返回 带数据的响应成功信息
      * @param <T> 类型
@@ -85,6 +84,27 @@ public class JsonResponseResult<T> implements Serializable {
         result.code = "200";
         result.success = true;
         result.msg = "响应成功";
+        result.data = data;
+        result.date = DATE_FORMAT.format(new Date());
+
+        try {
+            return mapper.writeValueAsString(result);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * @param data 数据
+     * @return 返回 带数据的响应成功信息
+     * @param <T> 类型
+     */
+    public static <T> String success(String msg, T data) {
+        JsonResponseResult<T> result = new JsonResponseResult<>();
+
+        result.code = "200";
+        result.success = true;
+        result.msg = msg;
         result.data = data;
         result.date = DATE_FORMAT.format(new Date());
 

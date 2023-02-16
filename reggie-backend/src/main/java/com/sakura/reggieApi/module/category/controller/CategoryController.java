@@ -1,6 +1,7 @@
 package com.sakura.reggieApi.module.category.controller;
 
 import com.sakura.reggieApi.common.anno.LogAnnotation;
+import com.sakura.reggieApi.common.utils.JsonResponseResult;
 import com.sakura.reggieApi.common.utils.TokenUtils;
 import com.sakura.reggieApi.module.category.pojo.Category;
 import com.sakura.reggieApi.module.category.service.CategoryService;
@@ -8,6 +9,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
+
+import javax.management.remote.JMXServerErrorException;
+import java.time.chrono.JapaneseChronology;
 
 /**
  * @author sakura
@@ -23,7 +27,31 @@ public class CategoryController {
     @Autowired
     CategoryService categoryService;
 
+    @LogAnnotation("查询分类列表")
+    @GetMapping("/list")
+    public String doList(@RequestHeader(HERDER_TOKEN_KEY) String token) {
 
+        return categoryService.listCategoryAndDish(token);
+    }
+
+    @LogAnnotation("根据id 查询分类的名字")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPADMIN')")
+    @GetMapping("/queryName/{id}")
+    public String doQueryName(@RequestHeader(HERDER_TOKEN_KEY) String token,
+                              @PathVariable("id") Long id) {
+        return categoryService.queryName(token, id);
+    }
+
+    @LogAnnotation("查询分类信息")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPADMIN')")
+    @GetMapping("/listType/{type}")
+    public String doCategoryListByType(@RequestHeader(HERDER_TOKEN_KEY) String token,
+                                       @PathVariable("type") Integer type) {
+
+        return categoryService.listByType(token, type);
+    }
+
+    @LogAnnotation("更新分类信息")
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPADMIN')")
     @PutMapping("/update")
     public String doCategoryUpdate(@RequestHeader(HERDER_TOKEN_KEY) String token,
@@ -48,7 +76,7 @@ public class CategoryController {
         return categoryService.removeCategory(token, type, id);
     }
 
-    @LogAnnotation("查询分类管理")
+    @LogAnnotation("分页查询分类管理")
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPADMIN')")
     @GetMapping("/list/{curPage}")
     public String doListCategory(@RequestHeader(HERDER_TOKEN_KEY) String token,

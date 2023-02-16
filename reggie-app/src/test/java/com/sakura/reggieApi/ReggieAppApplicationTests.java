@@ -1,12 +1,27 @@
 package com.sakura.reggieApi;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.sakura.reggieApi.common.utils.RedisUtils;
 
+import com.sakura.reggieApi.module.category.mapper.CategoryMapper;
+import com.sakura.reggieApi.module.dishmanagement.pojo.Dish;
+import com.sakura.reggieApi.module.order.mapper.OrdersMapper;
+import com.sakura.reggieApi.module.order.pojo.Orders;
+import com.sakura.reggieApi.module.setmealmanagement.pojo.SetmealDish;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.cache.CacheManager;
+import org.springframework.format.datetime.standard.DateTimeFormatterFactory;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+
+import javax.annotation.Resource;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.*;
 
 @SpringBootTest
 class ReggieAppApplicationTests {
@@ -14,24 +29,14 @@ class ReggieAppApplicationTests {
     @Autowired
     RedisUtils redisUtils;
 
+    @Resource
+    CategoryMapper categoryMapper;
+    @Resource
+    OrdersMapper ordersMapper;
     @Test
-    void contextLoads() throws JsonProcessingException {
+    void contextLoads() throws JsonProcessingException, ParseException {
 
-        /*String obj = redisUtils.get("login:1");
-        Employee employee = new ObjectMapper().readValue(obj, Employee.class);
-        System.out.println(employee.getPassword());
 
-        System.out.println("-----------------------------------------");
-        String password = employee.getPassword().substring(employee.getPassword().indexOf("}") + 1);
-        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-        String encode = passwordEncoder.encode("123abc");
-        boolean matches = passwordEncoder.matches("123abc", password);
-        System.out.println(matches);*/
-
-        String reqPassword = "$2a$10$jlB/x3GS.aFbXgyqagxR1OhEOql4M1EAE9h0ENd1slMITmIDDJCrC";
-        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-        boolean abc123 = encoder.matches("abc123", reqPassword);
-        System.out.println(abc123);
     }
 
 }

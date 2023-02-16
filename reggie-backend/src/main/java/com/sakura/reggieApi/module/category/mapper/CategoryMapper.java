@@ -2,8 +2,12 @@ package com.sakura.reggieApi.module.category.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.sakura.reggieApi.module.category.pojo.Category;
+import com.sakura.reggieApi.module.dishmanagement.pojo.Dish;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
+
+import java.util.List;
 
 /**
  * @author sakura
@@ -12,6 +16,10 @@ import org.apache.ibatis.annotations.Select;
  */
 @Mapper
 public interface CategoryMapper extends BaseMapper<Category> {
+
+    @Select("select * from dish where category_id = #{cid} and status = 1 order by sort ;")
+    List<Dish> selectCorrelationDish(@Param("cid") Long cid);
+
 
     /**
      * 根据 分类id 查询 是否存在关联的菜品

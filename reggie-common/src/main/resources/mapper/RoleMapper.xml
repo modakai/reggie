@@ -17,7 +17,17 @@
         from
             role
         where
-            id in (select rid from role_user where eid = #{eid})
+            id in
+            (select rid from role_user
+              <where>
+                <if test="eid != null">
+                    and eid = #{eid}
+                </if>
+                <if test="uid != null">
+                    and uid = #{uid}
+                </if>
+              </where>
+            )
     </select>
 
 </mapper>

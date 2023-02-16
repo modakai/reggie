@@ -5,9 +5,11 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.sakura.reggieApi.module.dishmanagement.pojo.Dish;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -19,7 +21,10 @@ import java.util.Objects;
 @JsonIgnoreProperties(value = "handler")
 public class Category implements Serializable {
 
+    @TableField(exist = false)
     private static final Long serialVersionUID = 1L;
+    @TableField(exist = false)
+    private List<Dish> dishList;
 
     @TableId
     private Long id;
@@ -60,6 +65,14 @@ public class Category implements Serializable {
     @Override
     public int hashCode() {
         return Objects.hash(id, type, name, sort, createTime, updateTime, createUser, updateUser);
+    }
+
+    public List<Dish> getDishList() {
+        return dishList;
+    }
+
+    public void setDishList(List<Dish> dishList) {
+        this.dishList = dishList;
     }
 
     public Long getId() {

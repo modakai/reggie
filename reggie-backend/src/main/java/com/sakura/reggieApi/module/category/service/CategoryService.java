@@ -18,4 +18,10 @@ public interface CategoryService extends IService<Category> {
     String queryCategoryDetail(String token, String name);
 
     String upateCategory(String token, Category category);
+
+    String listByType(String token, Integer type);
+
+    String queryName(String token, Long id);
+
+    String listCategoryAndDish(String token);
 }

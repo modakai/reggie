@@ -21,7 +21,7 @@ public class TokenUtils {
     /**
      * 两个常量： 过期时间；秘钥
      */
-    private static final long EXPIRE = 1000*60*60*24;
+    public static final long EXPIRE = 1000 * 60 * 60 * 24;
     private static final String SECRET = "reggie!";
     /**
      * 存储在redis 中 黑名单的 key

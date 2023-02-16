@@ -243,6 +243,9 @@ public class EmployeeServiceImpl extends ServiceImpl<EmployeeMapper, Employee>
         // 2.1 不为 default 则是 非用户名的分页查询
         Page<Employee> page = employeeMapper.selectPage(employeePage, queryWrapper);
 
+        if (page.getTotal() <= 0)
+            throw new EmployeeServiceException("未搜索到任何用户数据");
+
         // 3, 返回数据
         return JsonResponseResult.success(page);
     }
