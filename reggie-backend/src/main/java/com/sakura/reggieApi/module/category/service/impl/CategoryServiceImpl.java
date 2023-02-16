@@ -36,6 +36,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category>
     @Resource
     CategoryMapper categoryMapper;
 
+
     @Value("${page.pageSize}")
     private Integer pageSize;
 
@@ -226,11 +227,12 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category>
     }
 
     /**
-     * 查询 分类 以及分类相关菜品
+     * 获取分类列表
      * @return
      */
     @Override
     public String listCategoryAndDish(String token) {
+
         tokenUtils.checkToken(token);
 
         QueryWrapper<Category> queryWrapper = new QueryWrapper<Category>()
@@ -238,11 +240,6 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category>
 
         List<Category> categoryList = categoryMapper.selectList(queryWrapper);
 
-        for (Category category : categoryList) {
-            List<Dish> dishes = categoryMapper.selectCorrelationDish(category.getId());
-
-            category.setDishList(dishes);
-        }
 
         return JsonResponseResult.success(categoryList);
     }

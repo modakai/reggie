@@ -26,7 +26,7 @@ public class DishController {
     DishService dishService;
 
     @LogAnnotation("根据菜品分类的Id 查询对应的菜品列表")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPADMIN', 'USER')")
     @GetMapping("/listByCategoryId/{categoryId}")
     public String doListDishByCategoryId(@RequestHeader(HERDER_TOKEN_KEY) String token,
                                          @PathVariable("categoryId") Long categoryId) {

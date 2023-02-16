@@ -17,10 +17,6 @@ import java.util.List;
 @Mapper
 public interface CategoryMapper extends BaseMapper<Category> {
 
-    @Select("select * from dish where category_id = #{cid} and status = 1 order by sort ;")
-    List<Dish> selectCorrelationDish(@Param("cid") Long cid);
-
-
     /**
      * 根据 分类id 查询 是否存在关联的菜品
      * @param id 分类id

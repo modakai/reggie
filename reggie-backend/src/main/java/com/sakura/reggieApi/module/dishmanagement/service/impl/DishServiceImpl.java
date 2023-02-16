@@ -5,7 +5,10 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sakura.reggieApi.common.utils.JsonResponseResult;
+import com.sakura.reggieApi.common.utils.RedisUtils;
 import com.sakura.reggieApi.common.utils.TokenUtils;
 import com.sakura.reggieApi.common.utils.UploadFileUtil;
 import com.sakura.reggieApi.exception.DishManagementException;
@@ -17,6 +20,7 @@ import com.sakura.reggieApi.module.dishmanagement.pojo.DishFlavor;
 import com.sakura.reggieApi.module.dishmanagement.pojo.Flavor;
 import com.sakura.reggieApi.module.dishmanagement.service.DishService;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisHash;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -43,6 +47,8 @@ public class DishServiceImpl extends ServiceImpl<DishMapper, Dish>
     @Resource
     UploadFileUtil uploadFileUtil;
     @Resource
+    RedisUtils redisUtils;
+    @Resource
     TokenUtils tokenUtils;
     @Resource
     DishMapper dishMapper;
@@ -53,7 +59,8 @@ public class DishServiceImpl extends ServiceImpl<DishMapper, Dish>
 
     /**
      * 商品对应的 图片上传
-     * @param token 令牌
+     *
+     * @param token    令牌
      * @param dishFile 文件
      */
     @Override
@@ -66,6 +73,7 @@ public class DishServiceImpl extends ServiceImpl<DishMapper, Dish>
 
     /**
      * 查询口味列表
+     *
      * @param token 令牌
      */
     @Override
@@ -82,8 +90,9 @@ public class DishServiceImpl extends ServiceImpl<DishMapper, Dish>
 
     /**
      * 添加菜品
+     *
      * @param token 令牌
-     * @param dish 菜品
+     * @param dish  菜品
      */
     @Override
     public String saveDishAndDishFlavor(String token, Dish dish) {
@@ -119,13 +128,17 @@ public class DishServiceImpl extends ServiceImpl<DishMapper, Dish>
         if (count < flavorList.size() + 1)
             throw new DishManagementException("添加失败 服务出现异常, 请联系管理员");
 
+        // 删除缓存
+        redisUtils.delete("dish_" + dish.getCategoryId());
+
         return JsonResponseResult.defaultSuccess("添加成功");
     }
 
     /**
      * 分页查询用户菜品
-     * @param token 令牌
-     * @param curPage 当前页码
+     *
+     * @param token    令牌
+     * @param curPage  当前页码
      * @param dishName 菜品名称
      */
     @Override
@@ -152,9 +165,10 @@ public class DishServiceImpl extends ServiceImpl<DishMapper, Dish>
 
     /**
      * 修改简单的 菜品信息
-     *      启售 / 停售
-     *      删除
-     * @param token 令牌
+     * 启售 / 停售
+     * 删除
+     *
+     * @param token   令牌
      * @param reqDish 修改的菜品对象
      */
     @Override
@@ -171,8 +185,9 @@ public class DishServiceImpl extends ServiceImpl<DishMapper, Dish>
 
     /**
      * 菜品商品详情
+     *
      * @param token 令牌
-     * @param name 菜品名称
+     * @param name  菜品名称
      */
     @Override
     public String queryDetail(String token, String name) {
@@ -211,8 +226,9 @@ public class DishServiceImpl extends ServiceImpl<DishMapper, Dish>
 
     /**
      * 修改菜品详情
+     *
      * @param token 令牌
-     * @param dish 菜品
+     * @param dish  菜品
      */
     @Override
     public String updateDish(String token, Dish dish) {
@@ -227,7 +243,7 @@ public class DishServiceImpl extends ServiceImpl<DishMapper, Dish>
                 .set("name", dish.getName())
                 .set("category_id", dish.getCategoryId())
                 .set("price", dish.getPrice())
-                .set("image", dish.getImage() )
+                .set("image", dish.getImage())
                 .set("description", dish.getDescription())
                 .set("update_time", new Date())
                 .set("update_user", eid);
@@ -261,12 +277,16 @@ public class DishServiceImpl extends ServiceImpl<DishMapper, Dish>
             throw new DishManagementException("服务异常");
         }
 
+        // 删除缓存
+        redisUtils.delete("dish_" + dish.getCategoryId());
+
         return JsonResponseResult.defaultSuccess("修改成功");
     }
 
     /**
      * 批量修改
-     * @param token 令牌
+     *
+     * @param token    令牌
      * @param dishList 菜品集合
      */
     @Override
@@ -289,23 +309,40 @@ public class DishServiceImpl extends ServiceImpl<DishMapper, Dish>
 
     /**
      * 根据 分类id 查询对应的菜品列表
-     * @param token 令牌
+     *
+     * @param token      令牌
      * @param categoryId 分类id
      */
     @Override
     public String listDishByCId(String token, Long categoryId) {
-        tokenUtils.checkToken(token);
+        // 查询缓存中是否存在 对应id 的菜品列表
+        String redisDishKey = "dish_" + categoryId;
+        String jsonDishList = redisUtils.get(redisDishKey);
+        if (jsonDishList != null) {
+            try {
+                List<Dish> dishList = new ObjectMapper().readValue(jsonDishList, List.class);
+                return JsonResponseResult.success(dishList);
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e.getMessage());
+            }
+        }
 
         QueryWrapper<Dish> dishQueryWrapper = new QueryWrapper<Dish>()
                 .eq("category_id", categoryId)
                 .eq("status", 1)
-                .eq("is_deleted", 1)
+                .eq("is_deleted", 0)
                 .orderByAsc("sort");
 
         List<Dish> dishList = dishMapper.selectList(dishQueryWrapper);
 
         if (dishList.size() <= 0)
-            throw new DishManagementException("为查询到对应的菜品");
+            throw new DishManagementException("未查询到对应的菜品");
+
+        try {
+            redisUtils.set(redisDishKey, new ObjectMapper().writeValueAsString(dishList));
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
 
         return JsonResponseResult.success(dishList);
     }
@@ -328,7 +365,12 @@ public class DishServiceImpl extends ServiceImpl<DishMapper, Dish>
                 .set("update_user", Long.valueOf(tokenUtils.getMemberIdByJwtToken(token)))
                 .set("update_time", new Date());
 
-         return dishMapper.update(null, updateWrapper);
+        int update = dishMapper.update(null, updateWrapper);
+
+        // 删除缓存
+        redisUtils.delete("dish_" + dish.getCategoryId());
+
+        return update;
     }
 
 }

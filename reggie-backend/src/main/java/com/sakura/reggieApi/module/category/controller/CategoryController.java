@@ -27,7 +27,7 @@ public class CategoryController {
     @Autowired
     CategoryService categoryService;
 
-    @LogAnnotation("查询分类列表")
+    @LogAnnotation("获取分类列表")
     @GetMapping("/list")
     public String doList(@RequestHeader(HERDER_TOKEN_KEY) String token) {
 

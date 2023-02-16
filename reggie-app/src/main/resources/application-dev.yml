@@ -8,8 +8,8 @@ spring:
     password: 123abc
     driver-class-name: com.mysql.cj.jdbc.Driver
   redis:
-    host: localhost
-    #host: 192.168.205.129
+    #host: localhost
+    host: 192.168.205.129
     password: 123abc
   # 格式化时间
   jackson:
